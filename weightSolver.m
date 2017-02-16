@@ -12,8 +12,9 @@ classdef weightSolver < handle
         fixedWPanel
         emptyWPanel
         fuelWPanel
+        solverPanel
         
-        
+        solveButton
     end
     
     methods 
@@ -26,14 +27,55 @@ classdef weightSolver < handle
             obj.fixedWPanel = fWP(10, 500, 150, 70, obj.mainWindow);
             obj.emptyWPanel = eWP(170, 500, 400, 70, obj.mainWindow);
             obj.fuelWPanel = fP(10, 10, 760, 480, obj.mainWindow);
-            uipanel('Title', 'Fixed Weight', ...
-                'Pos', [10, 10, 20, 50], ...
+            
+            obj.solverPanel = uipanel('Title', 'Solver', ...
+                'Unit', 'pixels', ...
+                'Pos', [580, 500, 190, 70], ...
                 'Parent', obj.mainWindow);
+            
+            obj.solveButton = javax.swing.JButton('Solve');
+            javacomponent(obj.solveButton, [5 5 60 50], obj.solverPanel);
+            set(obj.solveButton, 'MouseClickedCallback', @obj.solveForWeight);
+            
+            uicontrol('Style', 'text', ...
+                'Position', [70 40 115 15], ...
+                'Parent', obj.solverPanel, ...
+                'String', 'Please fill all the fields');
+            uicontrol('Style', 'text', ...
+                'Position', [70 25 90 15], ...
+                'Parent', obj.solverPanel, ...
+                'String', 'Takeoff Weight: ');
             
         end
     end
     
     methods ( Access = 'private' )
+        
+        function solveForWeight(obj, hObject, eventdata)
+            
+            fixedW = obj.fixedWPanel.weight;
+            
+            emptyC = obj.emptyWPanel.constant;
+            emptyP = obj.emptyWPanel.power;
+            
+            obj.fuelWPanel.cal;
+            fuelPoF = obj.fuelWPanel.PoFractions;
+            fuelCbtF = obj.fuelWPanel.combatFuel;
+            fuelFbC = obj.fuelWPanel.pBCombat;
+            
+            rtn = 9000;
+            init = 10000;
+            while (abs(init - rtn) > 1) 
+                init = rtn;
+                rtn = fixedW + emptyC * init ^ emptyP + 1.06*(1-(1-fuelCbtF/(fuelFbC*init))*fuelPoF)*init;
+            end
+            
+            uicontrol('Style', 'text', ...
+                'Position', [70 5 115 20], ...
+                'Parent', obj.solverPanel, ...
+                'FontSize', 12, ...
+                'String', num2str(rtn));
+        end
         
     end
     
