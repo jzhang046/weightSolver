@@ -1,14 +1,16 @@
 classdef cruise < handle
     
-    properties
+    properties ( Access = 'private' )
         panel
         rangeEdit
         speedEdit
+        climbEdit
     end
     
     properties
         range
         speed
+        climbWF
     end
     
     properties ( Access = 'private' )
@@ -24,6 +26,7 @@ classdef cruise < handle
         function obj = cruise(left, buttom, length, height, wS)
             obj.range = 0;
             obj.speed = 0;
+            obj.climbWF = 1;
             obj.left = left;
             obj.buttom = buttom;
             obj.length = length;
@@ -61,12 +64,24 @@ classdef cruise < handle
                 'String', 'Speed in ft/s', ...
                 'FontSize', 12, ...
                 'Parent', obj.panel);
+            
+            obj.climbEdit = uicontrol('Style', 'edit', ...
+                'FontSize', 12, ...
+                'String', num2str(obj.climbWF), ...
+                'Position', [150 70 140 20], ...
+                'Parent', obj.panel, ...
+                'Callback', @obj.setClimbWF);
+            uicontrol('Style', 'text', ...
+                'Position', [150 95 140 20], ...
+                'String', 'Climb Weight Fraction', ...
+                'FontSize', 12, ...
+                'Parent', obj.panel);
         end
         
-        function wf = getWF(obj, sfc, LoD, climb)
+        function wf = getWF(obj, sfc, LoD)
             %return W(final)/W(initial), including climb. 
             wf = exp(obj.range * sfc / (LoD * obj.speed));
-            wf = 1/wf * climb;
+            wf = 1/wf * obj.climbWF;
         end
     end
         
@@ -82,6 +97,12 @@ classdef cruise < handle
         function setSpeed(obj, hObject, eventdata)
             obj.speed = str2double(get(hObject, 'String'));
             %Speed in ft/s. 
+        end
+        
+        function setClimbWF(obj, hObject, eventdata)
+            obj.climbWF = str2double(get(hObject, 'String'));
+            %Climb weight fraction
+            %disp(obj.climbWF);
         end
     end
 end

@@ -63,9 +63,9 @@ classdef weightSolver < handle
             fuelCbtF = obj.fuelWPanel.combatFuel;
             fuelFbC = obj.fuelWPanel.pBCombat;
             
-            rtn = 9000;
-            init = 10000;
-            while (abs(init - rtn) > 1) 
+            rtn = 800;
+            init = 900;
+            while (abs(init - rtn) > 0.00001) 
                 init = rtn;
                 rtn = fixedW + emptyC * init ^ emptyP + 1.06*(1-(1-fuelCbtF/(fuelFbC*init))*fuelPoF)*init;
             end
