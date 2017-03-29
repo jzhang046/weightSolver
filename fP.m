@@ -1,6 +1,8 @@
+%Panel object to calculate weight fractions.
 classdef fP < handle
-    
+
     properties
+        %GUI components.
         panel
         startEdit
         wGAccEdit
@@ -8,8 +10,9 @@ classdef fP < handle
         LoDEdit
         missionList
     end
-        
+
     properties
+        %Panel objects for specific missions.
         currentMission
         cruise1
         cruise2
@@ -18,36 +21,37 @@ classdef fP < handle
         loiter2
         combat
     end
-    
+
     properties
+        %Data for calculations, used by all the missions. 
         startFuel
         wGAcc
         sfc
         LoD
     end
-    
+
     properties
         PoFractions%product of all other fractions
         combatFuel%amount of fuel
         pBCombat%before combat
     end
-    
+
     methods
-        
+
         function obj = fP(left, buttom, length, height, wS)
             obj.panel = uipanel('Title', 'Fuel', ...
                 'Units', 'pixels', ...
                 'Position', [left, buttom, length, height], ...
                 'Parent', wS);
-            
+
             obj.wGAcc = 0.97;
             obj.sfc = 0.7 / 3600;
             obj.LoD = 9;
-            
+
             obj.init;
-            
+
         end
-        
+
         function cal(obj)
             w21 = obj.wGAcc;
             w42 = obj.cruise1.getWF(obj.sfc, obj.LoD);
@@ -55,21 +59,21 @@ classdef fP < handle
             w65 = obj.loiter1.getWF(obj.sfc, obj.LoD);
             w86 = obj.cruise2.getWF(obj.sfc, obj.LoD);
             w98 = 1;
-            
+
             w10_9 = obj.combat.getFuelWeight(obj.sfc);
-            
+
             w12_10 = obj.cruise3.getWF(obj.sfc, obj.LoD);
             w13_12 = 1;
             w14_13 = obj.loiter2.getWF(obj.sfc, obj.LoD);
-            
+
             obj.PoFractions = w21 * w42 * w54 * w65 * w86 * w98 * w12_10 * w13_12 * w14_13;
             obj.combatFuel = w10_9;
             obj.pBCombat = w21 * w42 * w54 * w65 * w86 * w98;
-            
+
         end
-        
+
     end
-    
+
     methods ( Access = 'private' )
         function init(obj)
             obj.startEdit = uicontrol('Style', 'edit', ...
@@ -85,7 +89,7 @@ classdef fP < handle
                 'Position', [5, 425, 70, 15], ...
                 'Parent', obj.panel, ...
                 'String', 'in lbs');
-            
+
             obj.wGAccEdit = uicontrol('Style', 'edit', ...
                 'Position', [250, 433, 70, 15], ...
                 'Parent', obj.panel, ...
@@ -99,7 +103,7 @@ classdef fP < handle
                 'Position', [155, 425, 95, 15], ...
                 'Parent', obj.panel, ...
                 'String', 'weight fraction');
-            
+
             obj.sfcEdit = uicontrol('Style', 'edit', ...
                 'Position', [350, 433, 70, 15], ...
                 'Parent', obj.panel, ...
@@ -113,7 +117,7 @@ classdef fP < handle
                 'Position', [325, 425, 25, 15], ...
                 'Parent', obj.panel, ...
                 'String', 'in /h');
-            
+
             obj.LoDEdit = uicontrol('Style', 'edit', ...
                 'Position', [450, 433, 70, 15], ...
                 'Parent', obj.panel, ...
@@ -123,14 +127,14 @@ classdef fP < handle
                 'Position', [425, 433, 25, 15], ...
                 'Parent', obj.panel, ...
                 'String', 'L/D');
-            
+
             obj.loiter1 = loiter(160, 5, 595, 390, obj.panel);
             obj.cruise2 = cruise(160, 5, 595, 390, obj.panel);
             obj.combat = combatt(160, 5, 595, 390, obj.panel);
             obj.cruise3 = cruise(160, 5, 595, 390, obj.panel);
             obj.loiter2 = loiter(160, 5, 595, 390, obj.panel);
             obj.cruise1 = cruise(160, 5, 595, 390, obj.panel);
-            
+
             obj.missionList = uicontrol('Style', 'List', ...
                 'String', ...
                 {'Cruise 1', 'Loiter 1', 'Cruise 2', 'Combat', 'Cruise 3', 'Reserve(Loiter)'}, ...
@@ -138,37 +142,37 @@ classdef fP < handle
                 'Parent', obj.panel, ...
                 'Callback', @obj.setMission);
         end
-        
+
         function setStartingFuel(obj, hObject, eventdata)
             obj.startFuel = str2double(get(hObject, 'String'));
         end
-        
+
         function setGroundAccelerate(obj, hObject, eventdata)
             obj.wGAcc = str2double(get(hObject, 'String'));
         end
-        
+
         function setClimb(obj, hObject, eventdata)
             obj.wClimb = str2double(get(hObject, 'String'));
         end
-        
+
         function setSfc(obj, hObject, eventdata)
             obj.sfc = str2double(get(hObject, 'String'));
             %SFC in per hour
-            
+
             obj.sfc = obj.sfc / 3600;
-            %Convert to per second. 
+            %Convert to per second.
         end
-        
+
         function setLoD(obj, hObject, eventdata)
             obj.LoD = str2double(get(hObject, 'String'));
         end
-        
+
         function setMode(obj, hObject, eventdata)
             obj.mode = get(hObject, 'Selecteditem');
             %disp(obj.mode);
         end
-        
-        function setMission(obj, hObject, eventdata) 
+
+        function setMission(obj, hObject, eventdata)
             obj.currentMission = get(hObject, 'Value');
             switch obj.currentMission
                 case 1
@@ -188,5 +192,5 @@ classdef fP < handle
             end
         end
     end
-            
+
 end
