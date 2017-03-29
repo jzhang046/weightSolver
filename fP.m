@@ -23,7 +23,7 @@ classdef fP < handle
     end
 
     properties
-        %Data for calculations, used by all the missions. 
+        %Data for calculations, used by all the missions.
         startFuel
         wGAcc
         sfc
@@ -43,16 +43,23 @@ classdef fP < handle
                 'Units', 'pixels', ...
                 'Position', [left, buttom, length, height], ...
                 'Parent', wS);
+            %The fuel weight fraction panel.
+            %It is a uipanel object.
 
             obj.wGAcc = 0.97;
             obj.sfc = 0.7 / 3600;
             obj.LoD = 9;
+            %Initial values.
 
             obj.init;
 
         end
 
         function cal(obj)
+            %This function is used to generate corresponding weight fractions with the input data.
+            %Calculations are unable to perform unless all the data has been properlly typed,
+            %And it's meaningless to update the result everytime when user key in some value.
+
             w21 = obj.wGAcc;
             w42 = obj.cruise1.getWF(obj.sfc, obj.LoD);
             w54 = 1;
@@ -65,6 +72,8 @@ classdef fP < handle
             w12_10 = obj.cruise3.getWF(obj.sfc, obj.LoD);
             w13_12 = 1;
             w14_13 = obj.loiter2.getWF(obj.sfc, obj.LoD);
+            %Weight fractions during the mission.
+            %Numbers indicate the position in the mission.
 
             obj.PoFractions = w21 * w42 * w54 * w65 * w86 * w98 * w12_10 * w13_12 * w14_13;
             obj.combatFuel = w10_9;
@@ -76,6 +85,7 @@ classdef fP < handle
 
     methods ( Access = 'private' )
         function init(obj)
+            %GUI components initializatiopn.
             obj.startEdit = uicontrol('Style', 'edit', ...
                 'Position', [75, 433, 70, 15], ...
                 'String', '???', ...
