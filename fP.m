@@ -47,9 +47,11 @@ classdef fP < handle
             %It is a uipanel object.
 
             obj.wGAcc = 0.97;
-            obj.sfc = 0.7 / 3600;
             obj.LoD = 9;
             %Initial values.
+
+            %obj.sfc = 0.7 / 3600;
+            %Shared SFC no longer valid.
 
             obj.init;
 
@@ -61,17 +63,17 @@ classdef fP < handle
             %And it's meaningless to update the result everytime when user key in some value.
 
             w21 = obj.wGAcc;
-            w42 = obj.cruise1.getWF(obj.sfc, obj.LoD);
+            w42 = obj.cruise1.getWF(obj.LoD);
             w54 = 1;
-            w65 = obj.loiter1.getWF(obj.sfc, obj.LoD);
-            w86 = obj.cruise2.getWF(obj.sfc, obj.LoD);
+            w65 = obj.loiter1.getWF(obj.LoD);
+            w86 = obj.cruise2.getWF(obj.LoD);
             w98 = 1;
 
-            w10_9 = obj.combat.getFuelWeight(obj.sfc);
+            w10_9 = obj.combat.getFuelWeight;
 
-            w12_10 = obj.cruise3.getWF(obj.sfc, obj.LoD);
+            w12_10 = obj.cruise3.getWF(obj.LoD);
             w13_12 = 1;
-            w14_13 = obj.loiter2.getWF(obj.sfc, obj.LoD);
+            w14_13 = obj.loiter2.getWF(obj.LoD);
             %Weight fractions during the mission.
             %Numbers indicate the position in the mission.
 
@@ -114,6 +116,7 @@ classdef fP < handle
                 'Parent', obj.panel, ...
                 'String', 'weight fraction');
 
+            %{
             obj.sfcEdit = uicontrol('Style', 'edit', ...
                 'Position', [350, 433, 70, 15], ...
                 'Parent', obj.panel, ...
@@ -127,6 +130,7 @@ classdef fP < handle
                 'Position', [325, 425, 25, 15], ...
                 'Parent', obj.panel, ...
                 'String', 'in /h');
+            %}
 
             obj.LoDEdit = uicontrol('Style', 'edit', ...
                 'Position', [450, 433, 70, 15], ...
@@ -165,6 +169,7 @@ classdef fP < handle
             obj.wClimb = str2double(get(hObject, 'String'));
         end
 
+        %{
         function setSfc(obj, hObject, eventdata)
             obj.sfc = str2double(get(hObject, 'String'));
             %SFC in per hour
@@ -172,6 +177,7 @@ classdef fP < handle
             obj.sfc = obj.sfc / 3600;
             %Convert to per second.
         end
+        %}
 
         function setLoD(obj, hObject, eventdata)
             obj.LoD = str2double(get(hObject, 'String'));
