@@ -6,8 +6,6 @@ classdef fP < handle
         panel
         startEdit
         wGAccEdit
-        sfcEdit
-        LoDEdit
         missionList
     end
 
@@ -17,7 +15,8 @@ classdef fP < handle
         cruise1
         cruise2
         cruise3
-        loiter1
+        TankerRende
+        Refueling
         loiter2
         combat
     end
@@ -26,8 +25,6 @@ classdef fP < handle
         %Data for calculations, used by all the missions.
         startFuel
         wGAcc
-        sfc
-        LoD
     end
 
     properties
@@ -47,14 +44,9 @@ classdef fP < handle
             %It is a uipanel object.
 
             obj.wGAcc = 0.97;
-            obj.LoD = 9;
-            %Initial values.
-
-            %obj.sfc = 0.7 / 3600;
-            %Shared SFC no longer valid.
+            %Initial value.
 
             obj.init;
-
         end
 
         function cal(obj)
@@ -63,17 +55,17 @@ classdef fP < handle
             %And it's meaningless to update the result everytime when user key in some value.
 
             w21 = obj.wGAcc;
-            w42 = obj.cruise1.getWF(obj.LoD);
+            w42 = obj.cruise1.getWF();
             w54 = 1;
-            w65 = obj.loiter1.getWF(obj.LoD);
-            w86 = obj.cruise2.getWF(obj.LoD);
+            w65 = obj.TankerRende.getWF() * obj.Refueling.getWF();
+            w86 = obj.cruise2.getWF();
             w98 = 1;
 
             w10_9 = obj.combat.getFuelWeight;
 
-            w12_10 = obj.cruise3.getWF(obj.LoD);
+            w12_10 = obj.cruise3.getWF();
             w13_12 = 1;
-            w14_13 = obj.loiter2.getWF(obj.LoD);
+            w14_13 = obj.loiter2.getWF();
             %Weight fractions during the mission.
             %Numbers indicate the position in the mission.
 
@@ -101,6 +93,8 @@ classdef fP < handle
                 'Position', [5, 425, 70, 15], ...
                 'Parent', obj.panel, ...
                 'String', 'in lbs');
+            %Start fuel edit box. 
+            %Current not in use. 
 
             obj.wGAccEdit = uicontrol('Style', 'edit', ...
                 'Position', [250, 433, 70, 15], ...
@@ -115,48 +109,27 @@ classdef fP < handle
                 'Position', [155, 425, 95, 15], ...
                 'Parent', obj.panel, ...
                 'String', 'weight fraction');
-
-            %{
-            obj.sfcEdit = uicontrol('Style', 'edit', ...
-                'Position', [350, 433, 70, 15], ...
-                'Parent', obj.panel, ...
-                'String', num2str(obj.sfc * 3600), ...
-                'Callback', @obj.setSfc);
-            uicontrol('Style', 'text', ...
-                'Position', [325, 440, 25, 15], ...
-                'Parent', obj.panel, ...
-                'String', 'SFC');
-            uicontrol('Style', 'text', ...
-                'Position', [325, 425, 25, 15], ...
-                'Parent', obj.panel, ...
-                'String', 'in /h');
-            %}
-
-            obj.LoDEdit = uicontrol('Style', 'edit', ...
-                'Position', [450, 433, 70, 15], ...
-                'Parent', obj.panel, ...
-                'String', num2str(obj.LoD), ...
-                'Callback', @obj.setLoD);
-            uicontrol('Style', 'text', ...
-                'Position', [425, 433, 25, 15], ...
-                'Parent', obj.panel, ...
-                'String', 'L/D');
-
-            obj.loiter1 = loiter(160, 5, 595, 390, obj.panel);
+            
+            obj.cruise1 = cruise(160, 5, 595, 390, obj.panel);
+            obj.TankerRende = cruise(160, 5, 595, 390, obj.panel);
+            obj.Refueling = cruise(160, 5, 595, 390, obj.panel);
             obj.cruise2 = cruise(160, 5, 595, 390, obj.panel);
             obj.combat = combatt(160, 5, 595, 390, obj.panel);
             obj.cruise3 = cruise(160, 5, 595, 390, obj.panel);
             obj.loiter2 = loiter(160, 5, 595, 390, obj.panel);
-            obj.cruise1 = cruise(160, 5, 595, 390, obj.panel);
 
             obj.missionList = uicontrol('Style', 'List', ...
                 'String', ...
-                {'Cruise 1', 'Loiter 1', 'Cruise 2', 'Combat', 'Cruise 3', 'Reserve(Loiter)'}, ...
+                {'Cruise 1', 'Tanker Rendezvous', 'Air Refueling', 'Cruise 2', 'Combat', 'Cruise 3', 'Reserve(Loiter)'}, ...
                 'Position', [5 5 150 390], ...
                 'Parent', obj.panel, ...
                 'Callback', @obj.setMission);
+            
+            obj.currentMission = 1;
+            obj.cruise1.show();
         end
-
+        
+        %Callback functions. 
         function setStartingFuel(obj, hObject, eventdata)
             obj.startFuel = str2double(get(hObject, 'String'));
         end
@@ -167,20 +140,6 @@ classdef fP < handle
 
         function setClimb(obj, hObject, eventdata)
             obj.wClimb = str2double(get(hObject, 'String'));
-        end
-
-        %{
-        function setSfc(obj, hObject, eventdata)
-            obj.sfc = str2double(get(hObject, 'String'));
-            %SFC in per hour
-
-            obj.sfc = obj.sfc / 3600;
-            %Convert to per second.
-        end
-        %}
-
-        function setLoD(obj, hObject, eventdata)
-            obj.LoD = str2double(get(hObject, 'String'));
         end
 
         function setMode(obj, hObject, eventdata)
@@ -194,14 +153,16 @@ classdef fP < handle
                 case 1
                     obj.cruise1.show;
                 case 2
-                    obj.loiter1.show;
+                    obj.TankerRende.show;
                 case 3
-                    obj.cruise2.show;
+                    obj.Refueling.show;
                 case 4
-                    obj.combat.show;
+                    obj.cruise2.show;
                 case 5
-                    obj.cruise3.show;
+                    obj.combat.show;
                 case 6
+                    obj.cruise3.show;
+                case 7
                     obj.loiter2.show;
                 otherwise
                     disp('Add more. ');

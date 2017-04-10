@@ -5,6 +5,7 @@ classdef loiter < handle
         panel
         timeEdit
         sfcEdit
+        LoDEdit
         %GUI components.
     end
 
@@ -20,6 +21,7 @@ classdef loiter < handle
     properties ( Access = 'private' )
         time
         sfc
+        LoD
         %Important data for calculagtions.
     end
 
@@ -28,6 +30,7 @@ classdef loiter < handle
         function obj = loiter(left, buttom, length, height, wS)
             obj.time = 0;
             obj.sfc = 0.7 / 3600;
+            obj.LoD = 12;
             %Set default data.
 
             obj.left = left;
@@ -72,12 +75,25 @@ classdef loiter < handle
                 'FontSize', 12, ...
                 'Parent', obj.panel);
             %Edit box for sfc.
+            
+            obj.LoDEdit = uicontrol('Style', 'edit', ...
+                'FontSize', 12, ...
+                'String', num2str(obj.LoD), ...
+                'Position', [150, 200, 140, 20], ...
+                'Parent', obj.panel, ...
+                'Callback', @obj.setLoD);
+            uicontrol('Style', 'text', ...
+                'Position', [150, 225, 140, 20], ...
+                'String', 'L/D', ...
+                'FontSize', 12, ...
+                'Parent', obj.panel);
+            %Edit box for L/D.
 
         end
 
-        function wf = getWF(obj, LoD)
+        function wf = getWF(obj)
             %return W(final)/W(initial).
-            wf = exp(obj.time * obj.sfc / LoD);
+            wf = exp(obj.time * obj.sfc / obj.LoD);
             wf = 1/wf;
         end
     end
@@ -97,6 +113,11 @@ classdef loiter < handle
 
             obj.sfc = obj.sfc / 3600;
             %Convert to per second.
+        end
+        
+        function setLoD(obj, hObject, eventdata)
+            obj.LoD = str2double(get(hObject, 'String'));
+            %Lift/Drag
         end
 
     end

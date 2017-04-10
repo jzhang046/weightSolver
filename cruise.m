@@ -7,6 +7,7 @@ classdef cruise < handle
         speedEdit
         climbEdit
         sfcEdit
+        LoDEdit
         %GUI components.
     end
 
@@ -24,6 +25,7 @@ classdef cruise < handle
         speed
         climbWF
         sfc
+        LoD
         %Important data for calculagtions.
     end
 
@@ -34,6 +36,7 @@ classdef cruise < handle
             obj.speed = 994;
             obj.climbWF = 1;
             obj.sfc = 0.7 / 3600;
+            obj.LoD = 12;
             %Set default values.
 
             obj.left = left;
@@ -104,6 +107,19 @@ classdef cruise < handle
                 'FontSize', 12, ...
                 'Parent', obj.panel);
             %Edit box for sfc.
+            
+            obj.LoDEdit = uicontrol('Style', 'edit', ...
+                'FontSize', 12, ...
+                'String', num2str(obj.LoD), ...
+                'Position', [150, 200, 140, 20], ...
+                'Parent', obj.panel, ...
+                'Callback', @obj.setLoD);
+            uicontrol('Style', 'text', ...
+                'Position', [150, 225, 140, 20], ...
+                'String', 'L/D', ...
+                'FontSize', 12, ...
+                'Parent', obj.panel);
+            %Edit box for L/D.
 
             uicontrol('Style', 'text', ...
                 'Position', [5 95 100 20], ...
@@ -119,9 +135,9 @@ classdef cruise < handle
 
         end
 
-        function wf = getWF(obj, LoD)
+        function wf = getWF(obj)
             %return W(final)/W(initial), including climb.
-            wf = exp(obj.range * obj.sfc / (LoD * obj.speed));
+            wf = exp(obj.range * obj.sfc / (obj.LoD * obj.speed));
             wf = 1/wf * obj.climbWF;
         end
     end
@@ -152,6 +168,11 @@ classdef cruise < handle
 
             obj.sfc = obj.sfc / 3600;
             %Convert to per second.
+        end
+        
+        function setLoD(obj, hObject, eventdata)
+            obj.LoD = str2double(get(hObject, 'String'));
+            %Lift/Drag
         end
 
     end
