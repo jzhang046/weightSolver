@@ -33,6 +33,7 @@ classdef cruise < handle
     properties ( Access = 'private' )
         mach
         altitude
+        airPpt
         %Data used to calculate for important data. 
     end
 
@@ -145,7 +146,7 @@ classdef cruise < handle
 
             uicontrol('Style', 'text', ...
                 'Position', [5 95 100 20], ...
-                'String', 'Never set mach', ...
+                'String', 'Never set speed', ...
                 'FontSize', 10, ...
                 'Parent', obj.panel);
             uicontrol('Style', 'text', ...
@@ -160,9 +161,8 @@ classdef cruise < handle
         function wf = getWF(obj)
             %return W(final)/W(initial), including climb.
             
-            airPpt = atmos(obj.altitude);
-            obj.speed = obj.mach * airPpt.a;
-            wf = exp(obj.range * obj.sfc / (obj.LoD * obj.speed));
+            obj.speed = obj.mach * obj.airPpt.a * 0.3048;
+        wf = exp(obj.range * obj.sfc / (obj.LoD * obj.speed));
             wf = 1/wf * obj.climbWF;
         end
     end
@@ -202,6 +202,7 @@ classdef cruise < handle
 
         function setAltitude(obj, hObject, eventdata)
             obj.altitude = str2double(get(hObject, 'String'));
+            obj.airPpt = atmos(obj.altitude);
             %Altitude and air properties
         end
         
@@ -212,6 +213,8 @@ classdef cruise < handle
             %Uncomment this to display and verify calculated speed of sound. 
             %Unit in m/s. 
             %disp(obj.mach * obj.airPpt.a * 0.3048);
+            obj.speed = obj.mach * obj.airPpt.a * 0.3048;
+            disp(obj.speed);
         end
         
     end
